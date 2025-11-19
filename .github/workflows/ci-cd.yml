@@ -119,11 +119,11 @@ jobs:
       run: mv trivy-results.json ./build/ || true
       if: always()
     
-    - name: Upload security scan to build
+    - name: Upload security scan results
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: build-artifacts
+        name: security-scan-results
         path: ./build/
 
   deploy:
