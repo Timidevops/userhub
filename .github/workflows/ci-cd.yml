@@ -157,7 +157,8 @@ jobs:
     
     - name: Deploy to Kubernetes
       run: |
-        echo "Deploying to demo.timidevops.xyz cluster..."
+        export ECR_REGISTRY=${{ steps.login-ecr.outputs.registry }}
+        export IMAGE_TAG=latest
         envsubst < k8s/deployment.yaml | kubectl apply -f -
         kubectl rollout status deployment/userportal -n default
       env:
