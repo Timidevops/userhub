@@ -103,14 +103,21 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
+    - name: Create build directory
+      run: mkdir -p ./build
+    
     - name: Run Trivy security scan
       uses: aquasecurity/trivy-action@master
       with:
         scan-type: 'fs'
         scan-ref: '.'
         format: 'json'
-        output: './build/trivy-results.json'
+        output: 'trivy-results.json'
       continue-on-error: true
+    
+    - name: Move scan results to build
+      run: mv trivy-results.json ./build/ || true
+      if: always()
     
     - name: Upload security scan to build
       uses: actions/upload-artifact@v4
@@ -150,7 +157,7 @@ jobs:
       run: |
         echo "Deploying to demo.timidevops.xyz cluster..."
         envsubst < k8s/deployment.yaml | kubectl apply -f -
-        kubectl rollout status deployment/tomcat -n default
+        kubectl rollout status deployment/userportal -n default
       env:
         IMAGE_TAG: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
