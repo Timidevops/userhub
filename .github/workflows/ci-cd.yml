@@ -63,16 +63,7 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Download build artifacts
-      uses: actions/download-artifact@v4
-      with:
-        name: build-artifacts
-        path: ./build/
-    
-    - name: Copy WAR to target
-      run: |
-        mkdir -p target
-        cp ./build/*.war target/
+
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
