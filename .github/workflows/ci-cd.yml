@@ -42,18 +42,19 @@ jobs:
     - name: Package WAR
       run: mvn package -DskipTests
     
-    - name: Upload test results
+    - name: Prepare build artifacts
+      run: |
+        mkdir -p ./build
+        cp -r target/surefire-reports ./build/ || true
+        cp target/*.war ./build/ || true
+        cp -r target/spotbugsXml.xml ./build/ || true
+    
+    - name: Upload build artifacts
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: test-results
-        path: target/surefire-reports/
-    
-    - name: Upload WAR artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: war-file
-        path: target/*.war
+        name: build-artifacts
+        path: ./build/
 
   docker-build-push:
     needs: build-test-analyze
@@ -62,11 +63,16 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     
-    - name: Download WAR artifact
+    - name: Download build artifacts
       uses: actions/download-artifact@v4
       with:
-        name: war-file
-        path: target/
+        name: build-artifacts
+        path: ./build/
+    
+    - name: Copy WAR to target
+      run: |
+        mkdir -p target
+        cp ./build/*.war target/
     
     - name: Configure AWS credentials
       uses: aws-actions/configure-aws-credentials@v4
@@ -103,15 +109,15 @@ jobs:
         scan-type: 'fs'
         scan-ref: '.'
         format: 'json'
-        output: 'trivy-results.json'
+        output: './build/trivy-results.json'
       continue-on-error: true
     
-    - name: Upload security scan results
+    - name: Upload security scan to build
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: security-scan-results
-        path: trivy-results.json
+        name: build-artifacts
+        path: ./build/
 
   deploy:
     needs: [security-scan, docker-build-push]
@@ -127,6 +133,16 @@ jobs:
         aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
         aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         aws-region: ${{ vars.AWS_REGION }}
+    
+    - name: Install kOps
+      run: |
+        curl -Lo kops https://github.com/kubernetes/kops/releases/download/v1.29.0/kops-linux-amd64
+        chmod +x kops
+        sudo mv kops /usr/local/bin/
+    
+    - name: Export kOps kubeconfig
+      run: |
+        kops export kubecfg --name demo.timidevops.xyz --state s3://hostbuck00 --admin
     
     - name: Install kubectl
       run: |
