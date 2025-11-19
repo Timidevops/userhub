@@ -140,24 +140,18 @@ jobs:
         chmod +x kops
         sudo mv kops /usr/local/bin/
     
-    - name: Export kOps kubeconfig
+    - name: Export Kops Kubeconfig
       run: |
-        kops export kubecfg --name demo.timidevops.xyz --state s3://hostbuck00 --admin
-    
-    - name: Install kubectl
-      run: |
-        curl -LO "https://dl.k8s.io/release/v1.28.0/bin/linux/amd64/kubectl"
-        chmod +x kubectl
-        sudo mv kubectl /usr/local/bin/
-    
-    - name: Configure kubeconfig
-      run: |
-        mkdir -p ~/.kube
-        echo "${{ secrets.KUBE_CONFIG }}" > ~/.kube/config
+        kops export kubecfg \
+          --name demo.timidevops.xyz \
+          --state s3://hostbuck \
+          --admin
     
     - name: Deploy to Kubernetes
       run: |
+        echo "Deploying to demo.timidevops.xyz cluster..."
         envsubst < k8s/deployment.yaml | kubectl apply -f -
+        kubectl rollout status deployment/tomcat -n default
       env:
         IMAGE_TAG: ${{ github.sha }}
         ECR_REGISTRY: ${{ steps.login-ecr.outputs.registry }}
