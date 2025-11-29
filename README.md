@@ -1,4 +1,4 @@
-# DevOps User Portal (Fixed - v2)
+# DevOps User Portal (JAVA BASED WEBAPP)
 
 AUtomating intergration and deployment (CI/CD) using Github Actions
 
