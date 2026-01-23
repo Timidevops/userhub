@@ -1,0 +1,28 @@
+# Copy this file to terraform.tfvars and update the values
+
+# AWS Configuration
+aws_region = "us-west-2"
+
+# Project Configuration
+project_name = "my-web-server"
+environment  = "dev"
+
+# Instance Configuration
+instance_type = "t2.medium"
+
+# Network Configuration
+vpc_cidr           = "10.0.0.0/16"
+public_subnet_cidr = "10.0.1.0/24"
+
+# Security Configuration
+# Restrict SSH access to your IP for better security
+# allowed_ssh_cidr = ["YOUR_IP/32"]
+allowed_ssh_cidr = ["0.0.0.0/0"]
+
+# SSH Key Configuration
+# Generate a key pair: ssh-keygen -t rsa -b 4096 -f ~/.ssh/my-web-server-key
+# Then paste the public key content here
+public_key = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQ... your-public-key-here"
+
+# Storage Configuration
+root_volume_size = 20
